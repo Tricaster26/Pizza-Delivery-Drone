@@ -8,7 +8,7 @@ public class Order {
     /** This method is used to calculate the delivery cost, in pence, of a given list of pizzas which can all be found
      * in one restaurant from a given list of restaurants.
      * */
-    public  static int getDeliveryCost(List<Restaurant> restaurantList, String... args) throws Exception {
+    public static int getDeliveryCost(List<Restaurant> restaurantList, String... args) throws Exception {
         int currentCost = 100;
         int costChecker = 0;
         //names of pizzas are all lower case as to accept arguments that are not case-sensitive

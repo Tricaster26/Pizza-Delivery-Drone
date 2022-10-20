@@ -8,7 +8,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LngLatTest {
-  List<AreaResponse> testArea = InCentralAreaClient.getInstance().responses ;
+  List<AreaCoordinates> testArea = InCentralAreaClient.getInstance().responses ;
 
     void testCoordinates1(){
         testArea.get(0).longitude = 1 ;
@@ -30,7 +30,7 @@ public class LngLatTest {
         System.out.println("---Test End---");
     }
     @Test
-    @DisplayName("In CentralArea method test")
+    @DisplayName("In CentralArea test")
     void isWithinBoundary(){
         testCoordinates1();
         LngLat testCoordinate = new LngLat(1.25,2);
@@ -43,7 +43,7 @@ public class LngLatTest {
         assertTrue(testCoordinate.inCentralArea(), "Coordinate is on vertical line boundary");
     }
     @Test
-    @DisplayName("outside CentralArea method test")
+    @DisplayName("Out CentralArea test")
     void isNotWithinBoundary(){
         testCoordinates1();
         LngLat testCoordinate = new LngLat(0,2);
@@ -70,7 +70,7 @@ public class LngLatTest {
     @DisplayName("nextPosition method test")
     void nextPosition(){
         LngLat testCoordinate = new LngLat(0,0);
-        LngLat testCoordinate2 = testCoordinate.nextPosition(CompassDirection.NNW);
+        LngLat testCoordinate2 = testCoordinate.nextPosition(CompassDirection.SSW);
         assertEquals(0.00015, testCoordinate2.distanceTo(testCoordinate), "Distance between one move is 0.00015 degrees");
     }
 

@@ -8,7 +8,7 @@ import java.util.List;
 
 
 public class InCentralAreaClient {
-    public List<AreaResponse> responses;
+    public List<AreaCoordinates> responses;
     private static InCentralAreaClient instance = null;
     /**
      This method is used to retrieve the data from the rest service provided by the user. Currently replaced by test

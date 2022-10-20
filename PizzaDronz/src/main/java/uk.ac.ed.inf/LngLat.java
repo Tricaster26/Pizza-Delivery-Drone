@@ -21,7 +21,7 @@ public record LngLat(double lng, double lat){
         InCentralAreaClient abc = InCentralAreaClient.getInstance();
 
         //The list of locations with their coordinates obtained from the REST service
-        List<AreaResponse> centralArea = abc.responses;
+        List<AreaCoordinates> centralArea = abc.responses;
 
         for(int i = 0; i < centralArea.size(); i++){
             LngLat coordinate1;
