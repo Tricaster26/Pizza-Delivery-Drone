@@ -28,7 +28,7 @@ public class Restaurant {
         List<Restaurant> restaurantList = null;
         try {
             if (serverBaseAddress == null){
-                //address for tests
+                //Default address
                 serverBaseAddress = new URL("https://ilp-rest.azurewebsites.net/");
             }
             if ( !serverBaseAddress.toString().endsWith( "/" ) ) {
