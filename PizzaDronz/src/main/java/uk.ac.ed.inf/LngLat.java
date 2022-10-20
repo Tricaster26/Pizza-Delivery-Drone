@@ -3,21 +3,20 @@ package uk.ac.ed.inf;
 import java.util.List;
 
 public record LngLat(double lng, double lat){
-// Constructor added for possible future additions
     public LngLat(double lng, double lat){
         this.lng = lng;
         this.lat = lat;
         }
 
     /**
-     * This method can be called to check if a geographic coordinate is within the central Area defined by the REST
-     * service. Returns true if in or on the boundaries received.
+     * Method used to check if a geographic coordinate is within the central Area defined by the REST service. Returns
+     * true if in or on the boundaries received.
      * It does this by checking if the point is on the boundary or if the  horizontal line to the right of the
      * point touches the boundary an odd number of times.
      */
     public boolean inCentralArea(){
         boolean isCentral = false;
-        int contactCounter = 0;
+        int contactCounter = 0; // checks how often the horizontal line intercepts the boundary
         InCentralAreaClient abc = InCentralAreaClient.getInstance();
 
         //The list of locations with their coordinates obtained from the REST service
@@ -63,7 +62,7 @@ public record LngLat(double lng, double lat){
                 double substituteLat2 = coordinate2.lat;
 
         //if the point lies on the same latitude as one of the vertices on the line, but not the same longitude,
-        //we push the line slightly up.
+        //we push the line slightly up as to make the horizontal line pass the edges instead of the vertex.
                 if (lat == coordinate1.lat && lng != coordinate1.lng|| lat == coordinate2.lat && lng != coordinate2.lng){
                     substituteLat1 = coordinate1.lat + Math.pow(10,-13);
                     substituteLat2 = coordinate2.lat + Math.pow(10,-13);

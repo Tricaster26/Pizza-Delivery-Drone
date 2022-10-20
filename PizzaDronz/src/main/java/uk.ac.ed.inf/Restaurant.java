@@ -24,8 +24,8 @@ public class Restaurant {
         return menu;
     }
 
-    public static List<Restaurant> getRestaurantsFromRestServer(URL serverBaseAddress) throws Exception {
-        List<Restaurant> restaurantList = null;
+    public static Restaurant[] getRestaurantsFromRestServer(URL serverBaseAddress) throws Exception {
+        Restaurant[] restaurantList = null;
         try {
             if (serverBaseAddress == null){
                 //Default address
@@ -46,7 +46,7 @@ public class Restaurant {
  */
 
         } catch (IOException e ) {
-           throw new Exception("Invalid URL");
+           throw new Exception("INVALID BASE URL");
         }
         return restaurantList;
     }
