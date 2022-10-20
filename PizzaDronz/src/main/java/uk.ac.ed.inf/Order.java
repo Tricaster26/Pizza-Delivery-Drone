@@ -15,10 +15,14 @@ public class Order {
         String firstPizza = args[0].toLowerCase();
         Restaurant withPizza = null;
 
+        // Cannot order more than 4 pizzas
+        if(args.length > 4){
+            throw new Exception("Cannot order more than 4 pizzas");
+        }
         for (Restaurant currRestaurant : restaurantList) {
             for (int j = 0; j < currRestaurant.menu.size(); j++) {
                 Menu currItem = currRestaurant.menu.get(j);
-       //If the first string matches the name of a pizza from a restaurant we store the restaurant name and leave loop.
+                //If the first string matches the name of a pizza from a restaurant we store the restaurant name and leave loop.
                 if (Objects.equals(currItem.name.toLowerCase(), firstPizza)) {
                     currentCost = currentCost + currItem.priceInPence;
                     withPizza = currRestaurant;
@@ -26,9 +30,11 @@ public class Order {
                 }
             }
         }
+
+
         // if first pizza in argument is not found in any menu, then throw exception.
         if(withPizza == null){
-            throw new Exception(" Invalid Pizza Combination");
+            throw new Exception("Ordered Pizza is not listed in available restaurants");
         }
 
         if(args.length > 1 ){

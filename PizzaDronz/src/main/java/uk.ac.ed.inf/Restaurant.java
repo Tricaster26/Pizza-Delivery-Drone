@@ -24,7 +24,7 @@ public class Restaurant {
         return menu;
     }
 
-    public static List<Restaurant> getRestaurantsFromRestServer(URL serverBaseAddress)  {
+    public static List<Restaurant> getRestaurantsFromRestServer(URL serverBaseAddress) throws Exception {
         List<Restaurant> restaurantList = null;
         try {
             if (serverBaseAddress == null){
@@ -46,7 +46,7 @@ public class Restaurant {
  */
 
         } catch (IOException e ) {
-           System.out.println("INVALID URL");
+           throw new Exception("Invalid URL");
         }
         return restaurantList;
     }

@@ -126,19 +126,14 @@ public record LngLat(double lng, double lat){
         double newLng = lng;
         double newLat = lat;
 
-        try {
-            //If compassDirect is null then the coordinates do not change as it will hover
-            if (!(compassDirection == null)) {
-                newLng = Math.sin(compassDirection.angle()) * 0.00015 + lng;
-                newLat = Math.cos(compassDirection.angle()) * 0.00015 + lat;
-                //round to the 13th decimal place
-                newLng = Math.round(newLng * Math.pow(10, 13)) / (Math.pow(10, 13));
-                newLat = Math.round(newLat * Math.pow(10, 13)) / (Math.pow(10, 13));
+        //If compassDirect is null then the coordinates do not change as it will hover
+        if (!(compassDirection == null)) {
+            newLng = Math.sin(compassDirection.angle()) * 0.00015 + lng;
+            newLat = Math.cos(compassDirection.angle()) * 0.00015 + lat;
+            //round to the 13th decimal place
+            newLng = Math.round(newLng * Math.pow(10, 13)) / (Math.pow(10, 13));
+            newLat = Math.round(newLat * Math.pow(10, 13)) / (Math.pow(10, 13));
             }
-        }
-        catch(Exception e){
-            System.out.println("Invalid compass direction given");
-        }
 
         return new LngLat(newLng,newLat);
 
