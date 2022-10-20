@@ -1,11 +1,14 @@
 package uk.ac.ed.inf;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class Order {
 
-    public  static int getDeliveryCost(ArrayList<Restaurant> restaurantList, String... args) throws InvalidPizzaCombinationException {
+    /** This method is used to calculate the delivery cost, in pence, of a given list of pizzas which can all be found
+     * in one restaurant from a given list of restaurants.
+     * */
+    public  static int getDeliveryCost(List<Restaurant> restaurantList, String... args) throws Exception {
         int currentCost = 100;
         int costChecker = 0;
         //names of pizzas are all lower case as to accept arguments that are not case-sensitive
@@ -25,7 +28,7 @@ public class Order {
         }
         // if first pizza in argument is not found in any menu, then throw exception.
         if(withPizza == null){
-            throw new InvalidPizzaCombinationException(" Invalid Pizza Combination");
+            throw new Exception(" Invalid Pizza Combination");
         }
 
         if(args.length > 1 ){
@@ -36,7 +39,7 @@ public class Order {
                         costChecker++;
                     }
                 }
-                //if for loop is exited without finding a matching name. Throw exception.
+                //if for loop is exited without finding a matching name in the same menu. Throw exception.
                 if(costChecker != i){
                     throw new InvalidPizzaCombinationException("Invalid Pizza Combination");
                 }

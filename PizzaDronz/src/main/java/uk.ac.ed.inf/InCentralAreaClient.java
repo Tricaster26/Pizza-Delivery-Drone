@@ -4,11 +4,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException ;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.List;
 
 
 public class InCentralAreaClient {
-    public ArrayList<AreaResponse> responses;
+    public List<AreaResponse> responses;
     private static InCentralAreaClient instance = null;
     /**
      This method is used to retrieve the data from the rest service provided by the user. Currently replaced by test

@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.List;
 
 public class Restaurant {
     @JsonProperty( "name" )
@@ -17,17 +17,18 @@ public class Restaurant {
     @JsonProperty ( "latitude" )
     public double latitude;
     @JsonProperty ( "menu" )
-    public ArrayList<Menu> menu;
+    public List<Menu> menu;
 
     /** Restaurant class already has field menu defined as a list of menu objects. getMenu can just return that field*/
-    public ArrayList<Menu> getMenu(){
+    public List<Menu> getMenu(){
         return menu;
     }
 
-    public static ArrayList<Restaurant> getRestaurantsFromRestServer(URL serverBaseAddress) throws IOException {
-        ArrayList<Restaurant> restaurantList;
+    public static List<Restaurant> getRestaurantsFromRestServer(URL serverBaseAddress)  {
+        List<Restaurant> restaurantList = null;
         try {
             if (serverBaseAddress == null){
+                //address for tests
                 serverBaseAddress = new URL("https://ilp-rest.azurewebsites.net/");
             }
             if ( !serverBaseAddress.toString().endsWith( "/" ) ) {
@@ -45,7 +46,7 @@ public class Restaurant {
  */
 
         } catch (IOException e ) {
-            throw new IOException("Invalid URL") ;
+           System.out.println("INVALID URL");
         }
         return restaurantList;
     }

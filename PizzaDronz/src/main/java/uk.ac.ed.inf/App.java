@@ -3,6 +3,7 @@ package uk.ac.ed.inf;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 
 /**
  * Hello world!
@@ -10,7 +11,8 @@ import java.net.URL;
  */
 public class App 
 {
-    public static void main( String[] args ) throws InvalidPizzaCombinationException, IOException {
-       System.out.println(Order.getDeliveryCost(Restaurant.getRestaurantsFromRestServer(null),null));
+    public static void main( String[] args )  {
+        LngLat testCoordinate = new LngLat(0,0);
+
     }
 }
