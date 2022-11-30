@@ -8,16 +8,16 @@ import java.util.List;
 
 
 public class InCentralAreaClient {
-    public List<AreaCoordinates> responses;
+    public List<AreaCoordinates> centralAreaCoordinates;
     private static InCentralAreaClient instance = null;
     /**
-     This method is used to retrieve the data from the rest service provided by the user. Currently replaced by test
-     data. The two input parameters are parts of the URL for the companies' website.
+     This method is used to retrieve the central area locations from the rest service provided by the user.
+     The two input parameters are the base URL and Echo respectively, for the companies' website.
      */
-     public void getResponse(String givenBase, String givenEcho){
+     public void collectCentralArea(String givenBase, String givenEcho){
         String baseUrl = "https://ilp-rest.azurewebsites.net/";
         String echoBasis = "";
-        responses = null;
+        centralAreaCoordinates = null;
         try {
             if (givenBase != null && givenEcho != null){
                  baseUrl = givenBase ;
@@ -32,12 +32,12 @@ public class InCentralAreaClient {
         the Jackson JSON library provides helper methods which can directly
         take a URL, perform the GET request convert the result to the specified class
  */
-            responses = new ObjectMapper().readValue( url , new TypeReference<>() {
+            centralAreaCoordinates = new ObjectMapper().readValue( url , new TypeReference<>() {
             });
 /**
  *some error checking − only needed for the sample ( if the JSON data is not correct usually an exception is thrown \)
  */
-            if ( !responses.get(0).name.endsWith ( echoBasis ) ) {
+            if ( !centralAreaCoordinates.get(0).name.endsWith ( echoBasis ) ) {
                 throw new RuntimeException ( "wrong echo returned " ) ;
             }
         } catch (IOException e ) {
@@ -56,7 +56,7 @@ public class InCentralAreaClient {
     public static InCentralAreaClient getInstance() {
         if(instance == null){
             instance = new InCentralAreaClient();
-            instance.getResponse(null,null);
+            instance.collectCentralArea(null,null);
         }
         return instance;
     }

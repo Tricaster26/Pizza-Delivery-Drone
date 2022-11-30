@@ -1,7 +1,14 @@
 package uk.ac.ed.inf;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
+import javax.swing.text.DateFormatter;
+import java.io.IOException;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -13,8 +20,6 @@ public class Order {
     public Date orderDate;
     @JsonProperty( "customer" )
     public String customer;
-    @JsonProperty( "name" )
-    public String name;
     @JsonProperty( "creditCardNumber" )
     public int creditCardNumber;
     @JsonProperty( "creditCardExpiry" )
@@ -24,7 +29,7 @@ public class Order {
     @JsonProperty("priceTotalInPence")
     public int priceTotalInPence;
     @JsonProperty("orderItems")
-    public List<Menu> orderItems;
+    public List<String> orderItems;
 
 
 
@@ -85,5 +90,50 @@ public class Order {
             }
         }
         return currentCost;
+    }
+    /** This method is used to find the pizzeria that contains the pizzas in the order with a valid list of order
+     * items */
+    public Restaurant pizzeriaFinder(URL serverBaseAddress) throws Exception {
+        Restaurant[] restaurantList = Restaurant.getRestaurantsFromRestServer(serverBaseAddress);
+        Restaurant pizzeriaWithItem = null;
+        for (Restaurant restaurant : restaurantList) {
+            for (int i = 0; i < restaurant.menu.size(); i++)
+                // Since pizzas are not shared between restaurants, then if first pizza matches,
+                // rest of them should be here as well
+                if (Objects.equals(restaurant.menu.get(i).name, orderItems.get(0))) {
+                    pizzeriaWithItem = restaurant;
+                    break;
+                }
+        }
+        if(pizzeriaWithItem == null){
+            throw new NullPointerException();
+        }
+        return  pizzeriaWithItem;
+    }
+
+    /**
+     This method is used to retrieve the orders made in a given day. The information is obtained from the REST service
+     whose base server address is given as an input.
+     */
+
+    public static List<Order> ordersForDay(LocalDate date, URL serverBaseAddress) throws Exception {
+        List<Order> listOfOrders = null;
+        try {
+            if (serverBaseAddress == null) {
+                //Default address
+                serverBaseAddress = new URL("https://ilp-rest.azurewebsites.net/");
+            }
+            if (!serverBaseAddress.toString().endsWith("/")) {
+                serverBaseAddress = new URL(serverBaseAddress + "/");
+            }
+            String formattedDate = new SimpleDateFormat("yyyy-MM-dd").format(date);
+            URL serverAddress = new URL(serverBaseAddress + "orders/" + "/" + formattedDate);
+
+            listOfOrders = new ObjectMapper().readValue(serverAddress, new TypeReference<>() {
+            });
+        } catch (IOException e) {
+            throw new Exception("INVALID BASE URL");
+        }
+        return listOfOrders;
     }
 }

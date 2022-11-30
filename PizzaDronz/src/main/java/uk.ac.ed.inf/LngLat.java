@@ -1,5 +1,6 @@
 package uk.ac.ed.inf;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public record LngLat(double lng, double lat){
@@ -20,7 +21,7 @@ public record LngLat(double lng, double lat){
         InCentralAreaClient abc = InCentralAreaClient.getInstance();
 
         //The list of locations with their coordinates obtained from the REST service
-        List<AreaCoordinates> centralArea = abc.responses;
+        List<AreaCoordinates> centralArea = abc.centralAreaCoordinates;
 
         for(int i = 0; i < centralArea.size(); i++){
             LngLat coordinate1;
@@ -125,7 +126,7 @@ public record LngLat(double lng, double lat){
         double newLng = lng;
         double newLat = lat;
 
-        //If compassDirect is null then the coordinates do not change as it will hover
+        //If compassDirection is null then the coordinates do not change as it will hover
         if (!(compassDirection == null)) {
             newLng = Math.sin(compassDirection.angle()) * 0.00015 + lng;
             newLat = Math.cos(compassDirection.angle()) * 0.00015 + lat;
@@ -138,5 +139,41 @@ public record LngLat(double lng, double lat){
 
     }
 
-}
+    /**This method is a helper method used to find the angle in degrees between the LngLat Object and another given
+     * LngLatObject
+     */
+    public double angleFinder(LngLat destination){
+        double angle = 0;
+        if (destination.lng >= lng && destination.lat >= lat){
+            double diffLng = destination.lng - lng;
+            double diffLat = destination.lat - lat;
+            if(destination.lat == lat){
+                angle = 90;
+            }
+            else angle = Math.toDegrees(Math.atan(diffLng/diffLat));
+        }
+        else if (destination.lng > lng && destination.lat < lat){
+            double diffLng = destination.lng - lng;
+            double diffLat = lat - destination.lat;
+            angle = 90 + Math.toDegrees(Math.atan(diffLat/diffLng));
+        }
+        else if (destination.lng <= lng && destination.lat <= lat){
+            double diffLng = lng - destination.lng;
+            double diffLat = lat - destination.lat ;
+            if(destination.lat == lat){
+                angle = 270;
+            }
+            else angle = 180 + Math.toDegrees(Math.atan(diffLng/diffLat));
+        }
+        else if (destination.lng < lng && destination.lat > lat){
+            double diffLng = lng - destination.lng;
+            double diffLat = lat - destination.lat;
+            angle = 270 + Math.toDegrees(Math.atan(diffLat/diffLng));
+        }
+        return angle;
+    }
+
+
+
+    }
 

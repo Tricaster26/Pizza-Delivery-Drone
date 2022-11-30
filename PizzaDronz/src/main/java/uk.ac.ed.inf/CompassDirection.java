@@ -1,5 +1,9 @@
 package uk.ac.ed.inf;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public enum CompassDirection {
     N (0),
     NNE (22.5),
@@ -25,6 +29,10 @@ public enum CompassDirection {
     }
     public double angle(){
         return angle;
+    }
+
+    public static List<CompassDirection>  compassValues() {
+        return new ArrayList<CompassDirection>(Arrays.asList(CompassDirection.values()));
     }
 
 }
