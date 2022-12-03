@@ -31,8 +31,8 @@ public enum CompassDirection {
         return angle;
     }
 
-    public static List<CompassDirection>  compassValues() {
-        return new ArrayList<CompassDirection>(Arrays.asList(CompassDirection.values()));
+    public static List<CompassDirection> allDirections() {
+        return new ArrayList<>(Arrays.asList(CompassDirection.values()));
     }
 
 }

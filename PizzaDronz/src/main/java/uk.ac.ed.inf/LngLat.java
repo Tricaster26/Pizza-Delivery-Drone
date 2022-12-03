@@ -114,7 +114,7 @@ public record LngLat(double lng, double lat){
     public boolean closeTo(LngLat position2){
         boolean isClose = false;
         double distance  = distanceTo(position2);
-        if (distance <= 0.00015){
+        if (distance < 0.00015){
            isClose = true;
         }
         return isClose;
@@ -128,8 +128,8 @@ public record LngLat(double lng, double lat){
 
         //If compassDirection is null then the coordinates do not change as it will hover
         if (!(compassDirection == null)) {
-            newLng = Math.sin(compassDirection.angle()) * 0.00015 + lng;
-            newLat = Math.cos(compassDirection.angle()) * 0.00015 + lat;
+            newLng = Math.sin(Math.toRadians(compassDirection.angle())) * 0.00015 + lng;
+            newLat = Math.cos(Math.toRadians(compassDirection.angle())) * 0.00015 + lat;
             //round to the 13th decimal place
             newLng = Math.round(newLng * Math.pow(10, 13)) / (Math.pow(10, 13));
             newLat = Math.round(newLat * Math.pow(10, 13)) / (Math.pow(10, 13));
@@ -139,40 +139,23 @@ public record LngLat(double lng, double lat){
 
     }
 
-    /**This method is a helper method used to find the angle in degrees between the LngLat Object and another given
-     * LngLatObject
+    /**This method finds the closest position, returned by nextPosition, to a given destination. It takes the parameter
+     * compass directions to only take valid compass directions if need be, and takes LngLat object which is the target
+     * position.
      */
-    public double angleFinder(LngLat destination){
-        double angle = 0;
-        if (destination.lng >= lng && destination.lat >= lat){
-            double diffLng = destination.lng - lng;
-            double diffLat = destination.lat - lat;
-            if(destination.lat == lat){
-                angle = 90;
-            }
-            else angle = Math.toDegrees(Math.atan(diffLng/diffLat));
-        }
-        else if (destination.lng > lng && destination.lat < lat){
-            double diffLng = destination.lng - lng;
-            double diffLat = lat - destination.lat;
-            angle = 90 + Math.toDegrees(Math.atan(diffLat/diffLng));
-        }
-        else if (destination.lng <= lng && destination.lat <= lat){
-            double diffLng = lng - destination.lng;
-            double diffLat = lat - destination.lat ;
-            if(destination.lat == lat){
-                angle = 270;
-            }
-            else angle = 180 + Math.toDegrees(Math.atan(diffLng/diffLat));
-        }
-        else if (destination.lng < lng && destination.lat > lat){
-            double diffLng = lng - destination.lng;
-            double diffLat = lat - destination.lat;
-            angle = 270 + Math.toDegrees(Math.atan(diffLat/diffLng));
-        }
-        return angle;
-    }
 
+    public CompassDirection optimalDirection(List<CompassDirection> directions , LngLat destination){
+        double distance = Integer.MAX_VALUE;
+        CompassDirection bestPosition = null;
+        for (CompassDirection direction : directions) {
+            LngLat currPosition = nextPosition(direction);
+            if (distance > currPosition.distanceTo(destination)) {
+                distance = currPosition.distanceTo(destination);
+                bestPosition = direction;
+            }
+        }
+        return bestPosition;
+    }
 
 
     }

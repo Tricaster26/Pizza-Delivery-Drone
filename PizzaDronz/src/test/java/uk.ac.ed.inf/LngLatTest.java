@@ -8,7 +8,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LngLatTest {
-  List<AreaCoordinates> testArea = InCentralAreaClient.getInstance().responses ;
+  List<AreaCoordinates> testArea = InCentralAreaClient.getInstance().centralAreaCoordinates;
 
     void testCoordinates1(){
         testArea.get(0).longitude = 1 ;
@@ -19,7 +19,7 @@ public class LngLatTest {
         testArea.get(2).latitude = 0;
         testArea.get(3).longitude = 1;
         testArea.get(3).latitude = 1;
-        InCentralAreaClient.getInstance().responses = testArea;
+        InCentralAreaClient.getInstance().centralAreaCoordinates = testArea;
     }
     @BeforeEach
     void printTestName(TestInfo testInfo) {

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
@@ -17,13 +16,13 @@ public class Restaurant {
     @JsonProperty ( "latitude" )
     public double latitude;
     @JsonProperty ( "menu" )
-    public List<Menu> menu;
+    public List<MenuItem> menu;
 
     /** Restaurant class already has field menu defined as a list of menu objects. getMenu can just return that field*/
 
 
     public static Restaurant[] getRestaurantsFromRestServer(URL serverBaseAddress) throws Exception {
-        Restaurant[] restaurantList = null;
+        Restaurant[] restaurantList;
         try {
             if (serverBaseAddress == null){
                 //Default address
