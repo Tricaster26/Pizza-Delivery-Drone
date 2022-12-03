@@ -13,7 +13,12 @@ public class NoFlyZone {
     @JsonProperty ( "coordinates" )
     public double[][] coordinates;
 
-    public static NoFlyZone[] getNoFlyZones(URL serverBaseAddress) throws Exception {
+    /** This method is used to return the list of no-fly zones given by the RestService.
+     *
+     * @param serverBaseAddress the base address of the REST-server website
+     * @return List of  NoFlyZone objects as listed in the REST-server
+     */
+    public static NoFlyZone[] getNoFlyZones(URL serverBaseAddress) {
         NoFlyZone[] noFlyZones = null;
         try {
             if (serverBaseAddress == null){
@@ -34,8 +39,9 @@ public class NoFlyZone {
  *some error checking − only needed for the sample ( if the JSON data is not correct usually an exception is thrown \)
  */
 
-        } catch (IOException e ) {
-            throw new Exception("INVALID BASE URL");
+        } catch (IOException e) {
+            System.err.println("Base URL entered is invalid");
+            System.exit(1);
         }
         return noFlyZones;
     }

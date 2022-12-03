@@ -12,6 +12,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ *  The responsibility of this class is to focus on orders obtained from the drone and the validation of them
+ *  according to the spec.
+ */
 public class Order {
     @JsonProperty( "orderNo" )
     public String orderNo;
@@ -31,11 +35,14 @@ public class Order {
     public List<String> orderItems;
 
 
-
-    /** This method and, its helper, is used to calculate the delivery cost, in pence, of pizzas in the orderItems which
-     * can all be found in one restaurant from a given list of restaurants.
-     * */
-    public int getDeliveryCost(Restaurant[] restaurantList) throws Exception {
+    /**This method and, its helper, is used to calculate the delivery cost, in pence, of pizzas in the orderItems which
+     * can all be found in one restaurant from a given list of restaurants. This method is used after checking
+     * the orderOutcome.
+     *
+     * @param restaurantList list of Restaurant objects obtained from the REST-service
+     * @return the cost of the list of pizzas in orderItems
+     */
+    public int getDeliveryCost(Restaurant[] restaurantList){
         int currentCost = 100;
         //names of pizzas are all lower case as to accept arguments that are not case-sensitive
         String firstPizza = orderItems.get(0).toLowerCase();
@@ -53,14 +60,18 @@ public class Order {
                 }
             }
         } catch(NullPointerException e){
-            throw new NullPointerException("Restaurant list is null");
+            throw new NullPointerException("Restaurant list is empty");
         }
         currentCost = currentCost + pizzaFinder(withPizza);
 
         return currentCost;
     }
     /** Helper method for getDeliveryCost. If the items in the orderItems list are in the same restaurant then
-     * the total price for those pizzas (excluding the first) is returned. */
+     * the total price for those pizzas (excluding the first) is returned.
+     *
+     * @param givenRestaurant A Restaurant object giving the menu
+     * @return the cost of the tail of orderItems
+     */
     private  int pizzaFinder(Restaurant givenRestaurant)  {
         int currentCost = 0;
         if(orderItems.size() > 1 ){
@@ -75,7 +86,11 @@ public class Order {
         return currentCost;
     }
     /** This method is used to find the pizzeria that contains the pizzas in the order with a valid list of order
-     * items. Takes in a list of Restaurant and returns the correct restaurant.  */
+     * items.
+     *
+     * @param restaurantList list of Restaurant objects obtained from the REST-service
+     * @return the Restaurant object with the first element in orderItem.
+     */
     public Restaurant restaurantFinder(Restaurant[] restaurantList) {
         Restaurant pizzeriaWithItem = null;
         for (Restaurant restaurant : restaurantList) {
@@ -92,14 +107,14 @@ public class Order {
         }
         return  pizzeriaWithItem;
     }
-
-    /**
-     This method is used to retrieve the orders made in a given day. The information is obtained from the REST service
-     whose base server address is given as an input.
+    /**  This method is used to retrieve the orders made in a given day.
+     *
+     * @param date a Date object that is in the format (yyyy-MM-dd)
+     * @param serverBaseAddress  the base address of the REST-server website
+     * @return List of Order objects found in the webpage
      */
-
-    public static List<Order> ordersForDay(Date date, URL serverBaseAddress) throws Exception {
-        List<Order> listOfOrders;
+    public static List<Order> ordersForDay(Date date, URL serverBaseAddress)  {
+        List<Order> listOfOrders = null;
         try {
             if (serverBaseAddress == null) {
                 //Default address
@@ -114,63 +129,70 @@ public class Order {
             listOfOrders = new ObjectMapper().readValue(serverAddress, new TypeReference<>() {
             });
         } catch (IOException e) {
-            throw new Exception("INVALID BASE URL");
+            System.err.println("Base URL entered is invalid");
+            System.exit(1);
         }
 
         return listOfOrders;
     }
-
-    /** Used to validate details of an order with a series of checks.Takes in the list of available restaurants and
-     * returns an OrderOutcome enum stating if it valid or invalid, with more detailed enums for being invalid.
+    /** Used to validate details of an order with a series of checks. The larger checks are split into their own methods.
+     *
+     * @param restaurantList list of Restaurant objects obtained from the REST-service
+     * @return enum object OrderOutcome that tells us the outcome of the OrderObject.
      */
-
-    public OrderOutcome orderOutcome(Restaurant[] restaurantList) throws Exception {
+    public OrderOutcome orderOutcome(Restaurant[] restaurantList) {
         if(!validCardNumber()){
-            return OrderOutcome.INVALID_CARD_NUMBER;
+            return OrderOutcome.InvalidCardNumber;
         }
         else if(!validExpiry()){
-            return  OrderOutcome.INVALID_EXPIRY_DATE;
+            return  OrderOutcome.InvalidExpiryDate;
         }
         else if(cvv.length() != 3){
-            return  OrderOutcome.INVALID_CVV;
+            return  OrderOutcome.InvalidCvv;
         }
         else if(orderItems.size() > 4){
-            return  OrderOutcome.INVALID_PIZZA_COUNT;
+            return  OrderOutcome.InvalidPizzaCount;
         }
         else if(!validPizzas(restaurantList)){
-            return OrderOutcome.INVALID_PIZZA_NOT_DEFINED;
+            return OrderOutcome.InvalidPizzaNotDefined;
         }
         else if(!singleSupplier(restaurantList)){
-            return OrderOutcome.INVALID_PIZZA_COMBINATION_MULTIPLE_SUPPLIERS;
+            return OrderOutcome.InvalidPizzaCombinationMultipleSuppliers;
         }
         else if(getDeliveryCost(restaurantList) != priceTotalInPence){
-            return OrderOutcome.INVALID_TOTAL;
+            return OrderOutcome.InvalidTotal;
         }
-        return OrderOutcome.VALID_BUT_NOT_DELIVERED;
+        return OrderOutcome.ValidButNotDelivered;
     }
-    /** This method checks if the pizzas are all from the same supplier. Takes in the list of Restaurant and returns a boolean
-    * value stating if the pizzas are from a single restaurant.*/
-    private boolean singleSupplier(Restaurant[] restaurantList){
+    /** Helper methods used to validate orderItems. If the orderItems are found in multiple suppliers the Order is not
+     * valid.
+     *
+     * @param restaurantList list of Restaurant objects obtained from the REST-service
+     * @return boolean value that is true if check is passed, false if not.
+     */
+    private boolean singleSupplier(Restaurant[] restaurantList) {
         Restaurant firstPizza = restaurantFinder(restaurantList);
         boolean foundPizza = false;
-        for(String orderItems:orderItems){
-            for (int i = 0 ; i<firstPizza.menu.size() ; i++){
+        for (String orderItems : orderItems) {
+            for (int i = 0; i < firstPizza.menu.size(); i++) {
                 //make both lower case to accept capsLock errors
                 if (Objects.equals(orderItems.toLowerCase(), firstPizza.menu.get(i).name.toLowerCase())) {
                     foundPizza = true;
                     break;
                 }
             }
-            if (!foundPizza){
+            if (!foundPizza) {
                 return false;
             }
             foundPizza = false;
         }
-        return  true;
+        return true;
     }
-    /** This method is used to check if all the order items are listed in any of the available restaurants. Takes in
-    * a parameter of type Restaurant[] and returns a boolean value which is false if an order item is not found in any restaurants
-    * menu*/
+    /** This method is used to check if all the order items are listed in any of the available restaurants.
+     *
+     * @param restaurantList list of Restaurant objects obtained from the REST-service
+     * @return a boolean value which is false if an order item is not found in any restaurant's menu, true otherwise.
+     */
     private boolean validPizzas(Restaurant[] restaurantList){
         boolean foundPizza = false;
         for (String orderItem : orderItems) {
@@ -192,9 +214,11 @@ public class Order {
         }
         return true;
     }
-
-    /** Applies validation checks to the card expiry date in the order object. Returns false if not valid and takes in no
-     * input parameters */
+    /** Applies validation checks to the card expiry date in the order object. Takes in no input parameters. It also
+     * checks if orderDate is in the expected format.
+     *
+     * @return boolean value false if creditCardExpiry does not pass the checks, true otherwise.
+     */
     private boolean validExpiry(){
         Date dateOrder = null;
         try {
@@ -204,6 +228,8 @@ public class Order {
             dateOrder = orderFormat.parse(orderDate);
         }
         catch(ParseException e){
+            //we exit as Order date being different will confuse what is valid. OrderDates
+            //must be valid to consider other orders.
             System.err.println("OrderDates in JSON are not in the correct format");
             System.exit(1);
         }
@@ -223,9 +249,10 @@ public class Order {
         }
         return true;
     }
-
-    /** Applies validation checks to the card number in the order object. Returns false if not valid and takes in no
-     * input parameters */
+    /** Applies validation checks to the card number in the order object. Takes in no input parameters.
+     *
+     * @return a boolean value false if creditCardNumber does not pass the checks, true otherwise.
+     */
     private boolean validCardNumber(){
         try{
             long cardNumber = Long.parseLong(creditCardNumber);
@@ -235,7 +262,7 @@ public class Order {
             // mast 1 and mast 2 make the IIN ranges of a subset of master card
             boolean mast1 = Long.parseLong(creditCardNumber.substring(0,4)) >= 2221;
             boolean mast2 = Long.parseLong(creditCardNumber.substring(0,4)) <= 2720;
-            // mast 3 and mast 4 make the rest of master card.
+            // mast 3 and mast 4 make the rest of the ranges of master card.
             boolean mast3 = Long.parseLong(creditCardNumber.substring(0,2)) >= 51;
             boolean mast4 = Long.parseLong(creditCardNumber.substring(0,2)) <= 55;
             //visa IIN range
@@ -243,30 +270,38 @@ public class Order {
             if(!(mast1 && mast2) && !(mast3 && mast4 )&& !visa){
                 return false;
             }
-            //Luhn algorithm to calculate check digit
-            String noCheckDigit = creditCardNumber.substring(0,15);
-            long checkDigit = cardNumber % 10;
-
-            long  sum = 0;
-            boolean isOdd= true; //used to check the odd loop
-            for(int i=(noCheckDigit).length(); i>0 ; i--){
-                int accountDigit = Integer.parseInt(noCheckDigit.substring(i - 1, i));
-                if(isOdd){
-                    accountDigit *=2;
-                }
-                // non-unit integers have their units summed
-                sum += accountDigit % 10;
-                sum += accountDigit/10;
-                isOdd = !isOdd;
-            }
-            if( (10 - (sum % 10)) %10 != checkDigit){
+            if(!luhnAlgo(cardNumber)){
                 return false;
             }
         }
+        //not in correct format
         catch (NumberFormatException e){
             return false;
         }
         return true;
     }
 
+    /**
+     * This method uses Luhn's Algorithm. An algoithim applied to the credit card number to validate it.
+     * @param cardNumber the credit card number
+     * @return boolean, if luhn's algoithim check is passed then return true else false.
+     */
+    private boolean luhnAlgo(long cardNumber){
+        String noCheckDigit = creditCardNumber.substring(0,15);
+        long checkDigit = cardNumber % 10;
+
+        long  sum = 0;
+        boolean isOdd= true; //used to check the odd loop
+        for(int i=(noCheckDigit).length(); i>0 ; i--){
+            int accountDigit = Integer.parseInt(noCheckDigit.substring(i - 1, i));
+            if(isOdd){
+                accountDigit *=2;
+            }
+            // non-unit integers have their units summed
+            sum += accountDigit % 10;
+            sum += accountDigit/10;
+            isOdd = !isOdd;
+        }
+        return (10 - (sum % 10)) % 10 == checkDigit;
+    }
 }

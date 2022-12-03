@@ -4,25 +4,32 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ *  This responsibility of the class is focused on the flight path of the drone. It finds the flight path of the drone
+ *  and the angles used to make the path. It also tracks the computation ticks per move.
+ */
 public class FlightPath {
    public List<LngLat> path;
-   public List<Long> nanoTime;
-   public List<Double> angle;
+   public List<Long> ticks;
+   public List<Double> angles;
 
-   public FlightPath(List<LngLat> path, List<Long> ticks, List<Double> angle){
-       this.nanoTime = ticks;
+   public FlightPath(List<LngLat> path, List<Long> ticks, List<Double> angles){
+       this.ticks = ticks;
        this.path = path;
-       this.angle = angle;
+       this.angles = angles;
    }
-    /** Helper function used to find if 2 line segments meet. Takes coordinate A, B and C then returns a boolean value
+    /** Helper function used to find if 2 line segments meet. Takes LngLat A, B and C then returns a boolean value
      * to be used in the function bestDirections.
      */
     private static boolean threeCoordinates(LngLat A, LngLat B, LngLat C){
         return (C.lat() - A.lat()) * (B.lng() -A.lng()) > (B.lat()-A.lat()) * (C.lng()-A.lng());
     }
-    /** Helper function used to find the moves that do not cross the no-fly zones. It takes in the current position
-     * and a  list of coordinates and returns a list of CompassDirection enums which don't cause the current position
-     * to move into (using nextPosition) the boundaries formed by a pair of coordinates.
+    /** Helper function used to find the moves that do not cross the boundaries of the  no-fly zones.
+     *
+     * @param source LngLat object represent current position of the drone.
+     * @param coordinates  list of lists of double representing coordinates(no-fly zone boundaries)
+     * @return list of CompassDirection enums which don't cause the current position to move into (using nextPosition)
+     *  the boundaries formed by a pair of coordinates.
      */
     private static List<CompassDirection> bestDirections(LngLat source,double[][] coordinates){
         List<CompassDirection> validCompassDirections = CompassDirection.allDirections();
@@ -48,15 +55,20 @@ public class FlightPath {
     }
 
 
-    /** This is our flightpath method. It is used to calculate the flightpath from a given source to a  given
-     * destination. The inputs are both LngLat objects. source is the starting position and destination is the
-     * destination position.
+
+    /** This is a helper method for our main flightpath method. It is used to calculate the flightpath from a given source
+     * to a  given destination.
+     *
+     * @param source LngLat object representing the start position of the drone.
+     * @param destination LngLat object representing the end position of the drone.
+     * @param noFlyZones List of NoFlyZone objects as listed in the REST-server
+     * @return FlightPath object holding the information for the moves made by the drone.
      */
-    public static FlightPath halfPath(LngLat source , LngLat destination, NoFlyZone[] noFlyZones )  {
+    private static FlightPath halfPath(LngLat source , LngLat destination, NoFlyZone[] noFlyZones )  {
         List<LngLat> queue = new ArrayList<>(); //used to check the current position of the drone.
         queue.add(source);
-        List<LngLat> flightPathList = new ArrayList<>();
-        flightPathList.add(source);
+        List<LngLat> flightPath = new ArrayList<>();
+        flightPath.add(source);
         List<Long> ticks = new ArrayList<>(); // holds computation ticks per move
         List<Double> angles = new ArrayList<>(); // holds angles per move;
 
@@ -74,7 +86,7 @@ public class FlightPath {
                 // if the position has not been visited and the position is closer to destination.
                 queue.add(newPosition);
 
-                flightPathList.add(newPosition);
+                flightPath.add(newPosition);
                 ticks.add(System.nanoTime());
                 angles.add(bestDirection.angle());
                 if (newPosition.closeTo(destination)) {
@@ -87,7 +99,7 @@ public class FlightPath {
                 validCompassValues.removeIf(validCompassValue -> !newPosition.nextPosition(validCompassValue).inCentralArea());
             }
             //if the source is not in central area and the new position is,
-            // then the remaining positions cannot be outside the central area
+            // then the remaining moves cannot lead outside the central area
             if (!inAreaSource){
                 if (newPosition.inCentralArea()){
                     //Removes compass values from validCompassValues, that lead to a position that is outside the central area
@@ -95,22 +107,24 @@ public class FlightPath {
                 }
             }
             //if position has been visited, then any future move that leads to it , is invalid
-            validCompassValues.removeIf(validCompassValue -> flightPathList.contains(newPosition.nextPosition(validCompassValue)));
+            validCompassValues.removeIf(validCompassValue -> flightPath.contains(newPosition.nextPosition(validCompassValue)));
             }
         //hover at destination
-        flightPathList.add(flightPathList.get(flightPathList.size()-1).nextPosition(null));
+        flightPath.add(flightPath.get(flightPath.size()-1).nextPosition(null));
         ticks.add(System.nanoTime());
         angles.add(null);
 
-        return (new FlightPath(flightPathList,ticks,angles));
+        return (new FlightPath(flightPath,ticks,angles));
     }
-/** helper method used to calculate the opposite angles in the angles of the object, in degrees. It Also removes
- * the null values in the beginning and adds one at the end .Takes in a list of type Double and adds the opposite
- * directions of the FlightPath object angles, to that list.*/
+    /** Helper method used to calculate the opposite angles in the instance angles of the object, in degrees.
+     * It Also removes the null values in the beginning and adds one at the end to correctly place the hover move.
+     *
+     * @param angleList list of type Double whose copy is manipulated.
+     */
     private void oppositeAngles(List<Double> angleList){
-        List<Double> copy =  new ArrayList<>(angle);
+        List<Double> copy =  new ArrayList<>(angles);
         Collections.reverse(copy);
-        copy.remove(0); //reverse
+        copy.remove(0); //remove first angle as we don't start with a hover move
         for (Double aDouble : copy) {
             if (aDouble < 180) {
                 double oppositeAngle = aDouble + 180;
@@ -124,19 +138,24 @@ public class FlightPath {
         angleList.add(null);
     }
 
-/** This method is used to obtain the flight path to be used by the drone. It examines the path given by halfPath,
- * to and from a destination and uses the shorter path as the flight path. It takes in 2 LngLat objects and a list
- * of type NoFlyZone. Returns an object of type FlightPath.*/
+    /** This method is used to obtain the flight path to be used by the drone. It examines the path given by halfPath,
+     * to and from a destination and uses the shorter path as the flight path.
+     *
+     * @param source LngLat object representing the start position of the drone.
+     * @param destination LngLat object representing the end position of the drone.
+     * @param noFlyZones List of NoFlyZone objects as listed in the REST-server
+     * @return FlightPath object holding the information for the moves made by the drone.
+     */
     public static FlightPath completeFlightPath(LngLat source , LngLat destination, NoFlyZone[] noFlyZones){
-        List<LngLat> compPathList = new ArrayList<>();
+        List<LngLat> compPathList;
         List<Long> ticks = new ArrayList<>();
         List<Double> angles = new ArrayList<>();
 
         FlightPath fpA = halfPath(source,destination,noFlyZones);
-        //use return path's(fpB) start position, as the last position of the arrival path(fpA)
+        //use arrival path's(fpA) final position, as the source position of the return path(fpB)
         LngLat approxDest = fpA.path.get(fpA.path.size()-1);
         FlightPath fpB = halfPath(approxDest,source,noFlyZones);
-        //if the return path is shorter than the arrival path
+        //we choose the shorter path
         if(fpA.path.size() > fpB.path.size()){
             //used to calculate ticks for reverse path to satisfy ticksSinceStartOfCalculation constraint.
             FlightPath fpB2 = halfPath(approxDest,source,noFlyZones);
@@ -145,18 +164,19 @@ public class FlightPath {
             Collections.reverse(fpBReverse);
             //last move of fpB.path is a hover move. So remove first move in reverse path.
             fpBReverse.remove(0);
-            //Add hover move at the end.
-            fpBReverse.add(fpB.path.get(0));
-            compPathList =fpBReverse;
             //remove the first LngLat of the returnPath as its position is already repeated twice (via hover)
             fpB.path.remove(0);
+            //Add hover move at the end.
+            fpBReverse.add(fpB2.path.get(0));
+
+            compPathList =fpBReverse;
             compPathList.addAll(fpB.path);
             //Find opposite angles and add them initially to the list. use fpB2 to maintain fpB
-            fpB2.oppositeAngles(angles);
-            angles.addAll(fpB.angle);
+            fpB.oppositeAngles(angles);
+            angles.addAll(fpB.angles);
 
-            ticks.addAll(fpB.nanoTime);
-            ticks.addAll(fpB2.nanoTime);
+            ticks.addAll(fpB.ticks);
+            ticks.addAll(fpB2.ticks);
         }
         else{
             FlightPath fpA2 = halfPath(source,destination,noFlyZones);
@@ -164,20 +184,20 @@ public class FlightPath {
             List<LngLat> fpAReverse = new ArrayList<>(fpA.path);
             Collections.reverse(fpAReverse);
 
-            fpAReverse.remove(0);
-            fpAReverse.remove(0);
+            fpAReverse.remove(0); //last move of fpA.path is a hover move.
+            fpAReverse.remove(0); //remove the first LngLat of the returnPath
+            fpAReverse.add(fpA.path.get(0)); //Add hover move at the end.
 
-            fpAReverse.add(fpA.path.get(0));
             compPathList =fpA.path;
-
             compPathList.addAll(fpAReverse);
-            angles.addAll(fpA.angle);
 
-            fpA2.oppositeAngles(angles);
+            angles.addAll(fpA.angles);
+            fpA.oppositeAngles(angles);
 
-            ticks.addAll(fpA.nanoTime);
-            ticks.addAll(fpA2.nanoTime);
+            ticks.addAll(fpA.ticks);
+            ticks.addAll(fpA2.ticks);
         }
         return new FlightPath(compPathList,ticks,angles);
     }
+
 }

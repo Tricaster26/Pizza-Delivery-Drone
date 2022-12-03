@@ -10,21 +10,21 @@ import java.util.List;
 public class InCentralAreaClient {
     public List<AreaCoordinates> centralAreaCoordinates;
     private static InCentralAreaClient instance = null;
-    /**
-     This method is used to retrieve the central area locations from the rest service provided by the user.
-     The two input parameters are the base URL and Echo respectively, for the companies' website.
+    /** This method is used to retrieve the central area locations from the rest service provided by the user.
+     *
+     * @param givenBase the base address of the REST-server website
+     * @param  givenEcho givenEcho for website
      */
-     public void collectCentralArea(String givenBase, String givenEcho){
-        String baseUrl = "https://ilp-rest.azurewebsites.net/";
-        String echoBasis = "";
-        centralAreaCoordinates = null;
+     public void collectCentralArea(URL givenBase, String givenEcho){
         try {
+            URL baseUrl = new URL ("https://ilp-rest.azurewebsites.net/");
+            String echoBasis = "";
             if (givenBase != null && givenEcho != null){
                  baseUrl = givenBase ;
                  echoBasis = givenEcho ;
             }
-            if ( !baseUrl.endsWith ( "/" ) ) {
-                baseUrl += "/" ;
+            if ( !baseUrl.toString().endsWith ( "/" ) ) {
+                baseUrl = new URL(baseUrl + "/") ;
             }
             // we call the centralArea endpoint
             URL url = new URL( baseUrl + "centralArea/ " + echoBasis ) ;
@@ -41,13 +41,14 @@ public class InCentralAreaClient {
                 throw new RuntimeException ( "wrong echo returned " ) ;
             }
         } catch (IOException e ) {
-            e.printStackTrace ( ) ;
+            System.err.println("Invalid URL");
+            System.exit(1);
         }
 
     }
      //private constructor which only stays in this class
-    private InCentralAreaClient(){
-
+     private InCentralAreaClient(){
+         this.centralAreaCoordinates = null;
     }
     /**
      method getInstance() is used to create instance of the singleton class InCentralAreaClient and then return that

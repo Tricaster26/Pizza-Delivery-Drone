@@ -1,19 +1,20 @@
 package uk.ac.ed.inf;
 
-import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *  The responsibility of this record is focused on geographic coordinates/positions. It is used to show how these
+ *  coordinates exist in the world of the spec and how they can be manipulated.
+ * @param lng  longitude
+ * @param lat  latitude
+ */
 public record LngLat(double lng, double lat){
-    public LngLat(double lng, double lat){
-        this.lng = lng;
-        this.lat = lat;
-        }
 
-    /**
-     * Method used to check if a geographic coordinate is within the central Area defined by the REST service. Returns
-     * true if in or on the boundaries received.
+    /** Method used to check if a geographic coordinate is within the central Area defined by the REST service.
      * It does this by checking if the point is on the boundary or if the  horizontal line to the right of the
      * point touches the boundary an odd number of times.
+     *
+     * @return boolean true if LngLat object is in or on the boundaries received
      */
     public boolean inCentralArea(){
         boolean isCentral = false;
@@ -99,17 +100,20 @@ public record LngLat(double lng, double lat){
         return isCentral;
     }
 
-    /**
-     * This method is used check the Pythagorean  distance between two coordinates. It takes a LngLat object and returns the distance
-     * between the coordinates parameter's and the LngLat object that called the method.
+    /** This method is used check the Pythagorean  distance between two coordinates.
+     *
+     * @param position2 a LngLat object
+     * @return the distance between the LngLat objects in degrees.
      */
     public double distanceTo(LngLat position2){
         double trueDistance = Math.sqrt(Math.pow(lng - position2.lng, 2) + Math.pow(lat - position2.lat,2));
         return  Math.round(trueDistance * Math.pow(10, 13)) / (Math.pow(10, 13));
     }
-    /**
-     * This method checks if the distance between two coordinates is within 0.00015 degrees. Takes in a LngLat object
-     * as a parameter and returns a boolean value that is true if the distance is within 0.00015 degrees.
+
+    /** This method checks if the distance between two coordinates is within 0.00015 degrees.
+     *
+     * @param position2 a LngLat object
+     * @return a boolean value that is true if distanceTo(position2) is within 0.00015 degrees.
      */
     public boolean closeTo(LngLat position2){
         boolean isClose = false;
@@ -119,8 +123,10 @@ public record LngLat(double lng, double lat){
         }
         return isClose;
     }
-    /** This method is used to find out the next position of the drone given a direction.The input parameter is an enum
-     *  to determine the direction. Returns a new LngLat object showing the next position of the drone
+    /** This method is used to find out the next position of the drone given a direction.
+     *
+     * @param compassDirection an enum to determine the direction
+     * @return a new LngLat object showing the next position of the drone.
      */
     public LngLat nextPosition(CompassDirection compassDirection){
         double newLng = lng;
@@ -139,9 +145,11 @@ public record LngLat(double lng, double lat){
 
     }
 
-    /**This method finds the closest position, returned by nextPosition, to a given destination. It takes the parameter
-     * compass directions to only take valid compass directions if need be, and takes LngLat object which is the target
-     * position.
+    /** This method finds the closest position, returned by nextPosition, to a given destination.
+     *
+     * @param directions List of CompassDirection enums to be checked.
+     * @param destination LngLat object that is the target position.
+     * @return CompassDirection that leads to the position closes to the target position.
      */
 
     public CompassDirection optimalDirection(List<CompassDirection> directions , LngLat destination){

@@ -23,6 +23,7 @@ public enum CompassDirection {
     NNW(337.5);
 
 
+
     private final double angle;
     CompassDirection(double angle) {
         this.angle = angle;

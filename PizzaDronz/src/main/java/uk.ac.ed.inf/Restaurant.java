@@ -18,11 +18,12 @@ public class Restaurant {
     @JsonProperty ( "menu" )
     public List<MenuItem> menu;
 
-    /** Restaurant class already has field menu defined as a list of menu objects. getMenu can just return that field*/
-
-
-    public static Restaurant[] getRestaurantsFromRestServer(URL serverBaseAddress) throws Exception {
-        Restaurant[] restaurantList;
+    /**This method is used to return the list of available restaurants from  the RestService.
+     * @param serverBaseAddress the base address of the REST-server website
+     * @return List of available restaurants as listed in the REST-server
+     */
+    public static Restaurant[] getRestaurantsFromRestServer(URL serverBaseAddress)  {
+        Restaurant[] restaurantList = new Restaurant[0];
         try {
             if (serverBaseAddress == null){
                 //Default address
@@ -32,18 +33,20 @@ public class Restaurant {
                 serverBaseAddress = new URL(serverBaseAddress + "/") ;
             }
             URL serverAddress = new URL(serverBaseAddress + "restaurants/");
-/**
- the Jackson JSON library provides helper methods which can directly
- take a URL, perform the GET request convert the result to the specified class
- */
+
+    /**
+     the Jackson JSON library provides helper methods which can directly
+    take a URL, perform the GET request convert the result to the specified class
+    */
             restaurantList = new ObjectMapper().readValue( serverAddress , new TypeReference<>() {
             });
-/**
- *some error checking − only needed for the sample ( if the JSON data is not correct usually an exception is thrown \)
- */
+    /**
+    *some error checking − only needed for the sample ( if the JSON data is not correct usually an exception is thrown \)
+    */
 
-        } catch (IOException e ) {
-           throw new Exception("INVALID BASE URL");
+        } catch (IOException e) {
+            System.err.println("Base URL entered is invalid");
+            System.exit(1);
         }
         return restaurantList;
     }
