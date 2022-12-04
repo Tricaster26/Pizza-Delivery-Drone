@@ -13,7 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *  The responsibility of this class is constructing the Json and GeoJson files asked for by the spec.
+ *  The responsibility of this class is constructing the Json and GeoJson files asked for by the spec. An instance of
+ *  this class represents the information used to form the Json files for deliveries and flightpath. Also, the information
+ *  for the GeoJson file, drone path.
  */
 public class ConstructJson {
     public JSONArray allDeliveries;
@@ -27,9 +29,9 @@ public class ConstructJson {
 
     /** This method is used to update the instance variables with the desired information asked by the specification.
      *
-     * @param orders List of Order objects. A list of orders for a given day obtained from the REST service.
-     * @param restaurantList List of Restaurant objects. A list of restaurants obtained from the REST service.
-     * @param noFlyZones List of NoFlyZone objects as listed in the REST-server.
+     * @param orders List of Order objects. A list of orders for a given day obtained from the REST-Service.
+     * @param restaurantList List of Restaurant objects. A list of restaurants obtained from the REST-Service.
+     * @param noFlyZones List of NoFlyZone objects as listed in the REST-Service.
      */
    public void developJson(List<Order> orders, Restaurant[] restaurantList, NoFlyZone[] noFlyZones) {
        LngLat appletonTower = new LngLat(-3.186874,55.944494);
@@ -59,8 +61,8 @@ public class ConstructJson {
        developCollection(completePath);
    }
 
-    /** This is a helper method used to update the allMoves field according to the information provided in the spec to
-     * create the flightpath json file.
+    /** This is a helper method used to update the allMoves instance variable
+     *  according to the information provided in the spec to create the flightpath json file.
      *
      * @param flight  FlightPath object holding the information for the path, ticks and angles.
      * @param tempOrder An Order object. Usually from a list of Orders.
@@ -83,8 +85,8 @@ public class ConstructJson {
        }
    }
 
-    /** This is a helper method used to update the allDeliveries field according to the information provided in the spec
-     * to create the deliveries json file.
+    /** This is a helper method used to update the allDeliveries instance variable according to
+     * the information provided in the spec to create the deliveries json file.
      *
      * @param orderOutcome  OrderOutcome enum. Tells us if an order is valid.
      * @param tempOrder  An Order object. Usually from a list of Orders.
@@ -106,8 +108,8 @@ public class ConstructJson {
        allDeliveries.add(deliveryRecord);
    }
 
-    /** This is a helper method used to update the allDeliveries field according to the information provided in the spec
-     * to create the GeoJson file.
+    /** This is a helper method used to update the featureCollection instance variable according to the
+     * information provided in the spec to create the GeoJson file.
      *
      * @param completePath List of LngLat representing the complete path for a given day of orders.
      */

@@ -18,9 +18,9 @@ public class Restaurant {
     @JsonProperty ( "menu" )
     public List<MenuItem> menu;
 
-    /**This method is used to return the list of available restaurants from  the RestService.
-     * @param serverBaseAddress the base address of the REST-server website
-     * @return List of available restaurants as listed in the REST-server
+    /**This method is used to return the list of available restaurants from  the REST-Service.
+     * @param serverBaseAddress the base address of the REST-Service website
+     * @return List of available restaurants as listed in the REST-Service
      */
     public static Restaurant[] getRestaurantsFromRestServer(URL serverBaseAddress)  {
         Restaurant[] restaurantList = new Restaurant[0];

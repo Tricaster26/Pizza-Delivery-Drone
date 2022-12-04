@@ -13,7 +13,22 @@ import java.util.List;
 public class App 
 {
     public static void main( String[] args )  {
-        String orderDate = args[0];
+        String orderDate = null;
+        URL baseAddress = null;
+        try{
+            orderDate=args[0];
+            baseAddress = new URL(args[1]);
+            String randomSeed = args[2];
+        }
+        catch (ArrayIndexOutOfBoundsException e){
+            System.err.println("Invalid number of arguments given");
+            System.exit(1);
+        }
+        catch (IOException e){
+            System.err.println("Malformed URL");
+            System.exit(1);
+        }
+
         Date orderDateFormatted = new Date();
         try {
             //entered String must be a date of format yyyy-MM-dd
@@ -25,16 +40,6 @@ public class App
             System.err.println("Invalid Date format. Correct Format (yyyy-MM-dd)");
             System.exit(1);
         }
-
-        URL baseAddress = null;
-        try {
-            baseAddress = new URL(args[1]);
-        }
-        catch (IOException e){
-            System.err.println("Malformed URL");
-            System.exit(1);
-        }
-        String randomSeed = args[2];
 
         //getting required data from rest service using the inputs
         List<Order> orders = Order.ordersForDay(orderDateFormatted, baseAddress);

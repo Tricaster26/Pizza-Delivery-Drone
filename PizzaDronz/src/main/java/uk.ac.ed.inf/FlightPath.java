@@ -6,7 +6,8 @@ import java.util.List;
 
 /**
  *  This responsibility of the class is focused on the flight path of the drone. It finds the flight path of the drone
- *  and the angles used to make the path. It also tracks the computation ticks per move.
+ *  and the angles used to make the path. It also tracks the computation ticks per move. An instance of this class
+ *  represents a flight path with the ticks need to calculate it and the angles that make the path.
  */
 public class FlightPath {
    public List<LngLat> path;
@@ -31,7 +32,7 @@ public class FlightPath {
      * @return list of CompassDirection enums which don't cause the current position to move into (using nextPosition)
      *  the boundaries formed by a pair of coordinates.
      */
-    private static List<CompassDirection> bestDirections(LngLat source,double[][] coordinates){
+    private static List<CompassDirection> validDirections(LngLat source, double[][] coordinates){
         List<CompassDirection> validCompassDirections = CompassDirection.allDirections();
         for (int i=0; i<coordinates.length - 1; i++){
             List<CompassDirection> testCompassDirections =  new ArrayList<>();
@@ -61,7 +62,7 @@ public class FlightPath {
      *
      * @param source LngLat object representing the start position of the drone.
      * @param destination LngLat object representing the end position of the drone.
-     * @param noFlyZones List of NoFlyZone objects as listed in the REST-server
+     * @param noFlyZones List of NoFlyZone objects as listed in the REST-Service
      * @return FlightPath object holding the information for the moves made by the drone.
      */
     private static FlightPath halfPath(LngLat source , LngLat destination, NoFlyZone[] noFlyZones )  {
@@ -78,21 +79,24 @@ public class FlightPath {
         boolean inAreaSource = source.inCentralArea();
         boolean inAreaDest = destination.inCentralArea();
         while(!queue.isEmpty()){
-            for (NoFlyZone noFlyZone : noFlyZones) {
-                validCompassValues.retainAll(bestDirections(queue.get(0), noFlyZone.coordinates));
+            LngLat currPosition = queue.get(0);
+            if (currPosition.closeTo(destination)) {
+                break;
             }
-                CompassDirection bestDirection = queue.get(0).optimalDirection(validCompassValues,destination);
-                LngLat newPosition =  queue.get(0).nextPosition(bestDirection);
-                // if the position has not been visited and the position is closer to destination.
-                queue.add(newPosition);
+            for (NoFlyZone noFlyZone : noFlyZones) {
+                List<CompassDirection> validDir = validDirections(currPosition, noFlyZone.coordinates);
+                validCompassValues.retainAll(validDir);
+            }
+                CompassDirection bestDirection = currPosition.optimalDirection(validCompassValues,destination);
+                LngLat newPosition =  currPosition.nextPosition(bestDirection);
 
+                queue.add(newPosition);
                 flightPath.add(newPosition);
                 ticks.add(System.nanoTime());
                 angles.add(bestDirection.angle());
-                if (newPosition.closeTo(destination)) {
-                    break;
-                }
+
             queue.remove(0);
+            //we reset the compass values and filter them here.
             validCompassValues = CompassDirection.allDirections();
             // If both source and destination are in central area, then we cannot not leave central area.
             if (inAreaSource && inAreaDest){
@@ -108,7 +112,7 @@ public class FlightPath {
             }
             //if position has been visited, then any future move that leads to it , is invalid
             validCompassValues.removeIf(validCompassValue -> flightPath.contains(newPosition.nextPosition(validCompassValue)));
-            }
+        }
         //hover at destination
         flightPath.add(flightPath.get(flightPath.size()-1).nextPosition(null));
         ticks.add(System.nanoTime());
@@ -143,7 +147,7 @@ public class FlightPath {
      *
      * @param source LngLat object representing the start position of the drone.
      * @param destination LngLat object representing the end position of the drone.
-     * @param noFlyZones List of NoFlyZone objects as listed in the REST-server
+     * @param noFlyZones List of NoFlyZone objects as listed in the REST-Service
      * @return FlightPath object holding the information for the moves made by the drone.
      */
     public static FlightPath completeFlightPath(LngLat source , LngLat destination, NoFlyZone[] noFlyZones){
@@ -171,7 +175,7 @@ public class FlightPath {
 
             compPathList =fpBReverse;
             compPathList.addAll(fpB.path);
-            //Find opposite angles and add them initially to the list. use fpB2 to maintain fpB
+            //Find opposite angles and add them to the list first as that is the starting path.
             fpB.oppositeAngles(angles);
             angles.addAll(fpB.angles);
 
@@ -184,7 +188,7 @@ public class FlightPath {
             List<LngLat> fpAReverse = new ArrayList<>(fpA.path);
             Collections.reverse(fpAReverse);
 
-            fpAReverse.remove(0); //last move of fpA.path is a hover move.
+            fpAReverse.remove(0); //last move of fpA.path is a hover move. So remove it
             fpAReverse.remove(0); //remove the first LngLat of the returnPath
             fpAReverse.add(fpA.path.get(0)); //Add hover move at the end.
 

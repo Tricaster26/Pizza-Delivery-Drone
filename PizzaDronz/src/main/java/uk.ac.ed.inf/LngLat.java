@@ -4,7 +4,8 @@ import java.util.List;
 
 /**
  *  The responsibility of this record is focused on geographic coordinates/positions. It is used to show how these
- *  coordinates exist in the world of the spec and how they can be manipulated.
+ *  coordinates exist in the world of the specification and how they can be manipulated.
+ *  An instance of this class represents a geographic coordinate on Earth.
  * @param lng  longitude
  * @param lat  latitude
  */
@@ -136,7 +137,7 @@ public record LngLat(double lng, double lat){
         if (!(compassDirection == null)) {
             newLng = Math.sin(Math.toRadians(compassDirection.angle())) * 0.00015 + lng;
             newLat = Math.cos(Math.toRadians(compassDirection.angle())) * 0.00015 + lat;
-            //round to the 13th decimal place
+
             newLng = Math.round(newLng * Math.pow(10, 13)) / (Math.pow(10, 13));
             newLat = Math.round(newLat * Math.pow(10, 13)) / (Math.pow(10, 13));
             }
@@ -156,15 +157,38 @@ public record LngLat(double lng, double lat){
         double distance = Integer.MAX_VALUE;
         CompassDirection bestPosition = null;
         for (CompassDirection direction : directions) {
-            LngLat currPosition = nextPosition(direction);
-            if (distance > currPosition.distanceTo(destination)) {
-                distance = currPosition.distanceTo(destination);
+            LngLat possiblePosition = nextPosition(direction);
+            if (distance > possiblePosition.distanceTo(destination)) {
+                distance = possiblePosition.distanceTo(destination);
+                bestPosition = direction;
+            }
+            if ((bestPosition != direction) && edgeCase(destination,distance,possiblePosition)){
                 bestPosition = direction;
             }
         }
         return bestPosition;
     }
 
-
+    /** Helper method to handle specific edge case. Used to handle the decision-making when considering two moves that
+     * are both as close to the destination as the other. This specifically useful when the true best position is
+     * blocked by a no fly-zone boundary to and from the destination and the two moves are the next best.
+     *
+     * @param destination LngLat Object, the goal of the path.
+     * @param distance double value, the current best distance
+     * @param possiblePosition LngLat Object, the current position being considered
+     * @return boolean value based on the constraints.
+     */
+    private boolean edgeCase(LngLat destination, double distance, LngLat possiblePosition){
+        if(distance ==  possiblePosition.distanceTo(destination)){
+            if(lat > destination.lat){
+                return true;
+            }
+            if(lat == destination.lat){
+                return lng > destination.lng;
+            }
+        }
+        return false;
     }
+
+}
 

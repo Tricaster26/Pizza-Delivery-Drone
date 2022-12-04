@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- *  The responsibility of this class is to focus on orders obtained from the drone and the validation of them
- *  according to the spec.
+ *  The responsibility of this class is to focus on orders obtained from the REST service and the validation of those
+ *  orders according to the spec. An instance of this class represents an Order from a customer.
  */
 public class Order {
     @JsonProperty( "orderNo" )
@@ -110,7 +110,7 @@ public class Order {
     /**  This method is used to retrieve the orders made in a given day.
      *
      * @param date a Date object that is in the format (yyyy-MM-dd)
-     * @param serverBaseAddress  the base address of the REST-server website
+     * @param serverBaseAddress  the base address of the REST-Service website
      * @return List of Order objects found in the webpage
      */
     public static List<Order> ordersForDay(Date date, URL serverBaseAddress)  {
@@ -282,9 +282,9 @@ public class Order {
     }
 
     /**
-     * This method uses Luhn's Algorithm. An algoithim applied to the credit card number to validate it.
+     * This method uses Luhn Algorithm. An algorithm applied to the credit card number to validate it.
      * @param cardNumber the credit card number
-     * @return boolean, if luhn's algoithim check is passed then return true else false.
+     * @return boolean, if Luhn algorithm check is passed then return true else false.
      */
     private boolean luhnAlgo(long cardNumber){
         String noCheckDigit = creditCardNumber.substring(0,15);
