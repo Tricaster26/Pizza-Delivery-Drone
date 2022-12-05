@@ -138,7 +138,7 @@ public class Order {
     /** Used to validate details of an order with a series of checks. The larger checks are split into their own methods.
      *
      * @param restaurantList list of Restaurant objects obtained from the REST-service
-     * @return enum object OrderOutcome that tells us the outcome of the OrderObject.
+     * @return enum object OrderOutcome that tells us the outcome of the Order Object.
      */
     public OrderOutcome orderOutcome(Restaurant[] restaurantList) {
         if(!validCardNumber()){
@@ -164,8 +164,8 @@ public class Order {
         }
         return OrderOutcome.ValidButNotDelivered;
     }
-    /** Helper methods used to validate orderItems. If the orderItems are found in multiple suppliers the Order is not
-     * valid.
+    /** Helper methods used to validate orderItems. If the elements of orderItems are found in multiple suppliers the
+     * order is not valid.
      *
      * @param restaurantList list of Restaurant objects obtained from the REST-service
      * @return boolean value that is true if check is passed, false if not.

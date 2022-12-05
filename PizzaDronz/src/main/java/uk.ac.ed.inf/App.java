@@ -48,10 +48,10 @@ public class App
         InCentralAreaClient.getInstance().collectCentralArea(baseAddress, "");
 
         //develop Json information according to spec
-        ConstructJson jsonInfo = new ConstructJson();
-        jsonInfo.developJson(orders,restaurantList,noFlyZones);
+        ConstructRecords records = new ConstructRecords();
+        records.developAll(orders,restaurantList,noFlyZones);
         //produce the required Json files.
-        jsonInfo.outputFiles(orderDate);
+        records.outputFiles(orderDate);
     }
 
 }
